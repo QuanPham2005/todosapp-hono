@@ -1,9 +1,9 @@
 import { Hono } from 'hono';
 import { cors } from 'hono/cors';
-import { connectDb } from './db/client';
+import { connectDb, type DbEnv } from './db/client';
 import apiRoutes from './routes/index';
 
-const app = new Hono();
+const app = new Hono<{ Bindings: DbEnv }>();
 const allowedOrigins = ['https://todosapp-hono.pages.dev', 'http://localhost:5173'];
 
 const corsConfig = {
@@ -27,7 +27,13 @@ app.use('/api/*', async (c, next) => {
   if (c.req.method === 'OPTIONS') {
     return next();
   }
-  await connectDb();
+
+  try {
+    await connectDb(c.env);
+  } catch (error) {
+    console.error('[db] connectDb failed:', error);
+  }
+
   return next();
 });
 

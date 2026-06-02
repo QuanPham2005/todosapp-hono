@@ -1,22 +1,32 @@
 import { neon } from '@neondatabase/serverless';
 import { drizzle } from 'drizzle-orm/neon-http';
 
-// 1. Lấy chuỗi kết nối
-const connectionString = process.env.DATABASE_URL || 'postgresql://postgres:Abc123456@127.0.0.1:5432/tododb';
+export type DbEnv = {
+  DATABASE_URL?: string;
+};
 
-// 2. Khởi tạo và ép kiểu thẳng thừng về any để vượt qua bộ lọc nghiêm ngặt của TS
-const sql = neon(connectionString) as any;
+const DEFAULT_DATABASE_URL = 'postgresql://postgres:Abc123456@127.0.0.1:5432/tododb';
 
-// 3. Khởi tạo Drizzle instance với neon-http
-export const db = drizzle(sql);
-
-/** Verifies database reachability before handling API requests. */
-export async function connectDb(): Promise<void> {
-  await sql`SELECT 1`;
+function getConnectionString(env?: DbEnv): string {
+  return env?.DATABASE_URL || process.env.DATABASE_URL || DEFAULT_DATABASE_URL;
 }
 
-// Giữ lại object giả lập pool để các file khác không bị lỗi import
+export function getNeonClient(env?: DbEnv) {
+  const connectionString = getConnectionString(env);
+  return neon(connectionString) as any;
+}
+
+export function getDb(env?: DbEnv) {
+  return drizzle(getNeonClient(env)) as any;
+}
+
+export async function connectDb(env?: DbEnv): Promise<void> {
+  const sql = getNeonClient(env);
+  await sql.query('SELECT 1');
+}
+
+export const db = getDb();
 export const pool = {
   end: async () => Promise.resolve(),
-  on: () => {}
+  on: () => undefined,
 } as any;

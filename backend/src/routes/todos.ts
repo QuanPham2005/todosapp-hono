@@ -1,5 +1,5 @@
 import { Hono } from 'hono';
-import { db } from '../db/client';
+import { getDb } from '../db/client';
 import { todos, tags as todoTags } from '../db/schema';
 import { and, eq, inArray } from 'drizzle-orm';
 import { verifyAuth } from '../middlewares/auth';
@@ -22,11 +22,12 @@ type TagRow = {
   name: string;
 };
 
-const todoRoutes = new Hono();
+const todoRoutes = new Hono<{ Bindings: import('../db/client').DbEnv }>();
 
 todoRoutes.use('*', verifyAuth);
 
 todoRoutes.get('/', async (c) => {
+  const db = getDb(c.env);
   const user = (c as any).get('user') as UserSession;
   const todoList = (await db.select().from(todos).where(eq(todos.userId, user.id))) as TodoRow[];
 
@@ -44,6 +45,7 @@ todoRoutes.get('/', async (c) => {
 });
 
 todoRoutes.post('/', async (c) => {
+  const db = getDb(c.env);
   const user = (c as any).get('user') as UserSession;
 
   let body: any;
@@ -93,6 +95,7 @@ todoRoutes.post('/', async (c) => {
 });
 
 todoRoutes.get('/:id', async (c) => {
+  const db = getDb(c.env);
   const user = (c as any).get('user') as UserSession;
   const id = Number(c.req.param('id'));
   const [todo] = (await db.select().from(todos).where(and(eq(todos.id, id), eq(todos.userId, user.id)))) as TodoRow[];
@@ -109,6 +112,7 @@ todoRoutes.get('/:id', async (c) => {
 });
 
 todoRoutes.patch('/:id', async (c) => {
+  const db = getDb(c.env);
   const user = (c as any).get('user') as UserSession;
   const id = Number(c.req.param('id'));
 
@@ -163,6 +167,7 @@ todoRoutes.patch('/:id', async (c) => {
 });
 
 todoRoutes.delete('/:id', async (c) => {
+  const db = getDb(c.env);
   const user = (c as any).get('user') as UserSession;
   const id = Number(c.req.param('id'));
 
