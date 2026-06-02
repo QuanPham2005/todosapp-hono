@@ -1,7 +1,6 @@
 import type { AuthUser, StatsData, TodoItem, TodoPayload, TodoUpdatePayload, AdminUser } from '../types';
 
-const envUrl = import.meta.env.VITE_API_URL;
-const API_BASE = envUrl ? envUrl.replace(/\/$/, '') : 'http://localhost:8787/api';
+const API_BASE = 'https://todo-app-backend.ptquan-k23tt.workers.dev/api';
 const STORAGE_KEY = 'todoapp_auth';
 
 export const getStoredAuth = () => {
