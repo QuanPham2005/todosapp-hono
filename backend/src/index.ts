@@ -5,21 +5,15 @@ import apiRoutes from './routes/index';
 
 const app = new Hono();
 
-// 1. Đảm bảo CORS nằm ở ĐẦU TIÊN để phản hồi các request OPTIONS từ trình duyệt
+// 1. Đặt cấu hình CORS bao quát toàn bộ ứng dụng ở ngay ĐẦU FILE
 app.use(
-  '/api/*',
+  '*',
   cors({
-    // Cho phép '*', hoặc điền chính xác link Pages (KHÔNG CÓ DẤU GẠCH CHÉO Ở CUỐI)
-    origin: (origin) => {
-      if (!origin) return '*';
-      if (origin.endsWith('.pages.dev') || origin.startsWith('http://localhost')) {
-        return origin; // Tự động chấp nhận tất cả các domain con của pages.dev và localhost
-      }
-      return '*';
-    },
-    allowHeaders: ['Content-Type', 'Authorization'],
+    origin: '*', // Cho phép tất cả các domain tiếp cận trong môi trường Cloudflare
+    allowHeaders: ['Content-Type', 'Authorization', 'X-Requested-With'],
     allowMethods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
-    credentials: true,
+    exposeHeaders: ['Content-Length', 'X-Kuma-Revision'],
+    maxAge: 600, // Giữ tùy chọn cấu hình thử nghiệm trong 10 phút để tăng tốc độ load
   })
 );
 
