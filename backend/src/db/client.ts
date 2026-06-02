@@ -9,6 +9,19 @@ const client = new Client({ connectionString });
 
 let connectPromise: Promise<void> | null = null;
 let isConnected = false;
+const CONNECT_TIMEOUT_MS = 5000;
+
+const withTimeout = async <T>(promise: Promise<T>, ms: number, message: string): Promise<T> => {
+  let timeoutId: ReturnType<typeof setTimeout> | undefined;
+  const timeoutPromise = new Promise<never>((_, reject) => {
+    timeoutId = setTimeout(() => reject(new Error(message)), ms);
+  });
+  try {
+    return await Promise.race([promise, timeoutPromise]);
+  } finally {
+    if (timeoutId) clearTimeout(timeoutId);
+  }
+};
 
 /** Ensures a single Postgres connection (Workers-compatible; avoids pg Pool timer.unref). */
 export async function connectDb(): Promise<void> {
@@ -20,28 +33,22 @@ export async function connectDb(): Promise<void> {
         isConnected = true;
       })
       .catch((error) => {
-        // In long-lived worker isolates, pg can throw this on repeated connect attempts.
-        // Treat it as a healthy connected state instead of failing every request.
-        if (
-          error instanceof Error &&
-          error.message.includes('Client has already been connected')
-        ) {
-          isConnected = true;
-          return;
-        }
         isConnected = false;
         connectPromise = null;
         console.error('[db/client] connect error:', error);
         throw error;
       });
   }
-  await connectPromise;
+  await withTimeout(
+    connectPromise,
+    CONNECT_TIMEOUT_MS,
+    '[db/client] connect timeout after 5s'
+  );
 }
 
 client.on('error', (error) => {
-  console.error('[db/client] client error:', error);
-  isConnected = false;
-  connectPromise = null;
+  // Do not force reconnection here: reconnecting a pg Client in Workers can deadlock requests.
+  console.error('[db/client] client error (non-fatal log):', error);
 });
 
 export const db = drizzle(client);
