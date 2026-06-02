@@ -8,7 +8,7 @@ compatibility_flags = ["nodejs_compat"]
 vars = { DATABASE_URL = "postgresql://postgres:Abc123456@127.0.0.1:5432/tododb" }
 
 [env.production]
-DATABASE_URL = "postgresql://neondb_owner:npg_6jTmIMEZgs2A@ep-plain-breeze-ap86n8gk-pooler.c-7.us-east-1.aws.neon.tech/neondb?sslmode=require&channel_binding=require"
+vars = { DATABASE_URL = "postgresql://neondb_owner:npg_6jTmIMEZgs2A@ep-plain-breeze-ap86n8gk-pooler.c-7.us-east-1.aws.neon.tech/neondb?sslmode=require&channel_binding=require" }
 
 [build]
 command = "npm run build"

@@ -5,20 +5,27 @@ import apiRoutes from './routes/index';
 
 const app = new Hono();
 
+const corsConfig = {
+  origin: ['https://todosapp-hono.pages.dev', 'http://localhost:5173'],
+  allowHeaders: ['Content-Type', 'Authorization', 'X-Requested-With'],
+  allowMethods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
+  exposeHeaders: ['Content-Length', 'X-Kuma-Revision'],
+  maxAge: 600,
+};
+
 // 1. Đặt cấu hình CORS bao quát toàn bộ ứng dụng ở ngay ĐẦU FILE
 app.use(
   '*',
-  cors({
-    origin: '*', // Cho phép tất cả các domain tiếp cận trong môi trường Cloudflare
-    allowHeaders: ['Content-Type', 'Authorization', 'X-Requested-With'],
-    allowMethods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
-    exposeHeaders: ['Content-Length', 'X-Kuma-Revision'],
-    maxAge: 600, // Giữ tùy chọn cấu hình thử nghiệm trong 10 phút để tăng tốc độ load
-  })
+  cors(corsConfig)
 );
+app.options('*', cors(corsConfig));
 
 // 2. Kết nối DB thông minh
-app.use('/api/*', async (_c, next) => {
+app.use('/api/*', async (c, next) => {
+  // Preflight requests should not depend on database availability.
+  if (c.req.method === 'OPTIONS') {
+    return next();
+  }
   await connectDb();
   return next();
 });

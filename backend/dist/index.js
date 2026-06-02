@@ -3,24 +3,33 @@ import { cors } from 'hono/cors';
 import { connectDb } from './db/client';
 import apiRoutes from './routes/index';
 const app = new Hono();
-app.use('*', async (_c, next) => {
+const corsConfig = {
+    origin: ['https://todosapp-hono.pages.dev', 'http://localhost:5173'],
+    allowHeaders: ['Content-Type', 'Authorization', 'X-Requested-With'],
+    allowMethods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
+    exposeHeaders: ['Content-Length', 'X-Kuma-Revision'],
+    maxAge: 600,
+};
+// 1. Đặt cấu hình CORS bao quát toàn bộ ứng dụng ở ngay ĐẦU FILE
+app.use('*', cors(corsConfig));
+app.options('*', cors(corsConfig));
+// 2. Kết nối DB thông minh
+app.use('/api/*', async (c, next) => {
+    // Preflight requests should not depend on database availability.
+    if (c.req.method === 'OPTIONS') {
+        return next();
+    }
     await connectDb();
     return next();
 });
-// Enable CORS for local development
-app.use('*', cors({
-    origin: ['http://localhost:5173', 'http://localhost:3000'],
-    allowHeaders: ['Content-Type', 'Authorization'],
-    allowMethods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH'],
-    credentials: true,
-}));
 app.get('/api/health', (c) => {
     return c.json({ status: 'OK' });
 });
 app.onError((err, c) => {
     console.error('Unhandled error:', err);
-    return c.json({ error: process.env.NODE_ENV === 'production' ? 'Internal Server Error' : err.message || 'Internal Server Error' }, 500);
+    return c.json({ error: err.message || 'Internal Server Error' }, 500);
 });
+// Đăng ký các tuyến đường API chính thức
 app.route('/api', apiRoutes);
 export default app;
 //# sourceMappingURL=index.js.map
