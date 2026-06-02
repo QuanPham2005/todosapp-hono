@@ -1,0 +1,37 @@
+{
+  "name": "todo-app-backend",
+  "version": "1.0.0",
+  "description": "Todo App Backend - Hono.js API",
+  "type": "module",
+  "main": "src/index.ts",
+  "scripts": {
+    "dev": "npx tsx scripts/dev-server.mjs",
+    "dev:worker": "npx wrangler dev --env local",
+    "init-db": "node scripts/init-db.mjs",
+    "build": "tsc -p tsconfig.json",
+    "deploy": "wrangler deploy",
+    "test": "vitest"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "hono": "^4.0.0",
+    "drizzle-orm": "^0.29.0",
+    "pg": "^8.11.0",
+    "jsonwebtoken": "^9.0.0",
+    "bcryptjs": "^2.4.3"
+  },
+  "devDependencies": {
+    "@types/bcryptjs": "^2.4.2",
+    "@types/jsonwebtoken": "^9.0.3",
+    "@types/node": "^20.11.0",
+    "@types/pg": "^8.6.0",
+    "wrangler": "^3.0.0",
+    "@cloudflare/workers-types": "^4.20240605.0",
+    "typescript": "^5.0.0",
+    "drizzle-kit": "^0.20.0",
+    "vitest": "^1.0.0",
+    "tsx": "^4.19.0"
+  }
+}

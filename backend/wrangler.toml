@@ -1,0 +1,15 @@
+name = "todo-app-backend"
+main = "dist/index.js"
+compatibility_date = "2025-07-18"
+workers_dev = true
+compatibility_flags = ["nodejs_compat"]
+
+[env.local]
+vars = { DATABASE_URL = "postgresql://postgres:Abc123456@127.0.0.1:5432/tododb" }
+
+[env.production]
+vars = { DATABASE_URL = "" }
+
+[build]
+command = "npm run build"
+cwd = "."
