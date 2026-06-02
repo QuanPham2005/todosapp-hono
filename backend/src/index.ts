@@ -14,7 +14,7 @@ app.use('*', async (_c, next) => {
 app.use(
   '*',
   cors({
-    origin: ['http://localhost:5173', 'http://localhost:3000'],
+    origin: ['http://localhost:5173', 'http://localhost:3000', 'https://todosapp-hono.pages.dev/'],
     allowHeaders: ['Content-Type', 'Authorization'],
     allowMethods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH'],
     credentials: true,
