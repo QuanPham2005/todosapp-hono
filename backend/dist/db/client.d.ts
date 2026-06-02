@@ -1,7 +1,7 @@
-import { Client } from 'pg';
-declare const client: Client;
-/** Ensures a single Postgres connection (Workers-compatible; avoids pg Pool timer.unref). */
+import { Pool } from 'pg';
+declare const pool: Pool;
+/** Verifies database reachability before handling API requests. */
 export declare function connectDb(): Promise<void>;
 export declare const db: import("drizzle-orm/node-postgres").NodePgDatabase<Record<string, never>>;
-export { client };
+export { pool };
 //# sourceMappingURL=client.d.ts.map
