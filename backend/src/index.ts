@@ -4,9 +4,10 @@ import { connectDb } from './db/client';
 import apiRoutes from './routes/index';
 
 const app = new Hono();
+const allowedOrigins = ['https://todosapp-hono.pages.dev', 'http://localhost:5173'];
 
 const corsConfig = {
-  origin: ['https://todosapp-hono.pages.dev', 'http://localhost:5173'],
+  origin: allowedOrigins,
   allowHeaders: ['Content-Type', 'Authorization', 'X-Requested-With'],
   allowMethods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
   exposeHeaders: ['Content-Length', 'X-Kuma-Revision'],
@@ -36,6 +37,12 @@ app.get('/api/health', (c) => {
 
 app.onError((err, c) => {
   console.error('Unhandled error:', err);
+  const origin = c.req.header('Origin');
+  if (origin && allowedOrigins.includes(origin)) {
+    c.header('Access-Control-Allow-Origin', origin);
+    c.header('Vary', 'Origin');
+    c.header('Access-Control-Expose-Headers', 'Content-Length,X-Kuma-Revision');
+  }
   return c.json(
     { error: err.message || 'Internal Server Error' },
     500
