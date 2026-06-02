@@ -20,7 +20,12 @@ app.use('/api/*', async (c, next) => {
     if (c.req.method === 'OPTIONS') {
         return next();
     }
-    await connectDb();
+    try {
+        await connectDb(c.env);
+    }
+    catch (error) {
+        console.error('[db] connectDb failed:', error);
+    }
     return next();
 });
 app.get('/api/health', (c) => {

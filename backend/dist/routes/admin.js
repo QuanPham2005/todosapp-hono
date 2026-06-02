@@ -1,11 +1,12 @@
 import { Hono } from 'hono';
-import { db } from '../db/client';
+import { getDb } from '../db/client';
 import { users, todos } from '../db/schema';
 import { count, eq } from 'drizzle-orm';
 import { verifyAuth, requireAdmin } from '../middlewares/auth';
 const adminRoutes = new Hono();
 adminRoutes.use('*', verifyAuth, requireAdmin);
 adminRoutes.get('/stats', async (c) => {
+    const db = getDb(c.env);
     try {
         const [{ value: usersCount }] = await db.select({ value: count() }).from(users);
         const [{ value: todosCount }] = await db.select({ value: count() }).from(todos);
@@ -17,6 +18,7 @@ adminRoutes.get('/stats', async (c) => {
     }
 });
 adminRoutes.get('/users', async (c) => {
+    const db = getDb(c.env);
     const userRows = await db
         .select({
         id: users.id,
@@ -30,6 +32,7 @@ adminRoutes.get('/users', async (c) => {
     return c.json({ users: userRows });
 });
 adminRoutes.patch('/users/:id/ban', async (c) => {
+    const db = getDb(c.env);
     const id = Number(c.req.param('id'));
     const [updatedUser] = await db
         .update(users)
@@ -42,6 +45,7 @@ adminRoutes.patch('/users/:id/ban', async (c) => {
     return c.json({ user: updatedUser });
 });
 adminRoutes.patch('/users/:id/unban', async (c) => {
+    const db = getDb(c.env);
     const id = Number(c.req.param('id'));
     const [updatedUser] = await db
         .update(users)

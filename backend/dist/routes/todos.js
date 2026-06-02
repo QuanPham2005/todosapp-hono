@@ -1,11 +1,12 @@
 import { Hono } from 'hono';
-import { db } from '../db/client';
+import { getDb } from '../db/client';
 import { todos, tags as todoTags } from '../db/schema';
 import { and, eq, inArray } from 'drizzle-orm';
 import { verifyAuth } from '../middlewares/auth';
 const todoRoutes = new Hono();
 todoRoutes.use('*', verifyAuth);
 todoRoutes.get('/', async (c) => {
+    const db = getDb(c.env);
     const user = c.get('user');
     const todoList = (await db.select().from(todos).where(eq(todos.userId, user.id)));
     const todoIds = todoList.map((todo) => todo.id);
@@ -19,6 +20,7 @@ todoRoutes.get('/', async (c) => {
     return c.json({ todos: todosWithTags });
 });
 todoRoutes.post('/', async (c) => {
+    const db = getDb(c.env);
     const user = c.get('user');
     let body;
     try {
@@ -60,6 +62,7 @@ todoRoutes.post('/', async (c) => {
     }, 201);
 });
 todoRoutes.get('/:id', async (c) => {
+    const db = getDb(c.env);
     const user = c.get('user');
     const id = Number(c.req.param('id'));
     const [todo] = (await db.select().from(todos).where(and(eq(todos.id, id), eq(todos.userId, user.id))));
@@ -73,6 +76,7 @@ todoRoutes.get('/:id', async (c) => {
     });
 });
 todoRoutes.patch('/:id', async (c) => {
+    const db = getDb(c.env);
     const user = c.get('user');
     const id = Number(c.req.param('id'));
     let body;
@@ -127,6 +131,7 @@ todoRoutes.patch('/:id', async (c) => {
     });
 });
 todoRoutes.delete('/:id', async (c) => {
+    const db = getDb(c.env);
     const user = c.get('user');
     const id = Number(c.req.param('id'));
     await db.delete(todoTags).where(eq(todoTags.todoId, id));

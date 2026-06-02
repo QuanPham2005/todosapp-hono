@@ -1,11 +1,12 @@
 import { Hono } from 'hono';
 import bcrypt from 'bcryptjs';
-import { db } from '../db/client';
+import { getDb } from '../db/client';
 import { users } from '../db/schema';
 import { eq } from 'drizzle-orm';
 import { createToken } from '../middlewares/auth';
 const auth = new Hono();
 auth.post('/register', async (c) => {
+    const db = getDb(c.env);
     let body;
     try {
         const rawBody = await c.req.text();
@@ -39,6 +40,7 @@ auth.post('/register', async (c) => {
     }
 });
 auth.post('/login', async (c) => {
+    const db = getDb(c.env);
     let body;
     try {
         const rawBody = await c.req.text();
