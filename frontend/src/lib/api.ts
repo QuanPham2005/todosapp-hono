@@ -1,6 +1,6 @@
 import type { AuthUser, StatsData, TodoItem, TodoPayload, TodoUpdatePayload, AdminUser } from '../types';
 
-const API_BASE = import.meta.env.VITE_API_BASE ?? '/api';
+const API_BASE = import.meta.env.VITE_API_URL ? import.meta.env.VITE_API_URL.replace(/\/$/, '') : 'http://localhost:8787';
 const STORAGE_KEY = 'todoapp_auth';
 
 export const getStoredAuth = () => {
